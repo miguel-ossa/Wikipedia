@@ -147,8 +147,8 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
     		// All seems to be OK, let's proceed with a valid node
        	    Node node = new Node();
     	    node.setName(line);
-    	    node.setTitle(doc.title());
-    	    node.setUrl(url);
+    	    node.setTitle(doc.title().replaceAll("\"",""));
+    	    node.setUrl(url.replaceAll("\"","\\\""));
     	    
     	    // Cleanup the string which contains the last modified datetime
     	    String strDate = doc.getElementById("footer-info-lastmod").toString().replace("<li id=\"footer-info-lastmod\"> This page was last edited on ", "").replace("<span class=\"anonymous-show\">&nbsp;(UTC)</span>.</li>", "").replace(", at", "");
@@ -219,30 +219,27 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
         	for(Node node : this.list){
 	            StringBuilder sb = new StringBuilder();	 
 	            
-	            if (node.getUrl().contains(",")) {
+	            if (node.getUrl().contains(",") && 
+	            	!node.getUrl().contains("\"")) {
 	            	sb.append("\"" + node.getUrl() + "\",");
 	            } else {
 	            	sb.append(node.getUrl() + ",");
 	            }
 	            
-	            if (node.getName().contains(" ") ||
-	            	node.getName().contains(",")) {
-	            	sb.append('"'+ node.getName() + "\",");
-	            }
-	            else if (node.getName().contains("\"")) {
-	            	sb.append("'"+ node.getName() + "',");
+	            if ((node.getName().contains(" ") ||
+	            	node.getName().contains(",")) &&
+	            	!node.getName().contains("\"")) {
+	            	sb.append("\""+ node.getName() + "\",");
 	            }
 	            else {
 	            	sb.append(node.getName() + ",");
 	            }
 	            
-	            if (node.getTitle().contains(" ") ||
-	            	node.getTitle().contains(",")) {
-	            	sb.append('"'+ node.getTitle() + "\",");
-	            }
-	            else if (node.getTitle().contains("\"") ||
-	            		node.getTitle().contains(",")) {
-	            	sb.append("'"+ node.getTitle() + "',");
+	            if ((node.getTitle().contains(" ") ||
+	            	node.getTitle().contains(",")) &&
+	             	!node.getTitle().contains("\""))
+	            {
+	            	sb.append("\"" + node.getTitle() + "\",");
 	            } else {
 	            	sb.append(node.getTitle() + ",");
 	            }
@@ -283,8 +280,7 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 		            	node.getTitle().contains(",")) {
 		            	sb.append('"'+ node.getTitle() + "\",");
 		        }
-		        else if (node.getTitle().contains("\"") ||
-		           		 node.getTitle().contains(",")) {
+		        else if (node.getTitle().contains("\"")) {
 		            	sb.append("'"+ node.getTitle() + "',");
 		        } else {
 		            	sb.append(node.getTitle() + ",");
@@ -306,10 +302,8 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
         	for(Node node : this.listNotFound){
 	            StringBuilder sb = new StringBuilder();	 
 	            
-	            if (node.getUrl().contains(",")) {
-	            	sb.append("\"" + node.getUrl() + "\",");
-	            } else sb.append(node.getUrl() + ",");
-	            
+	            sb.append("null,");
+
 	            if (node.getName().contains(" ") ||
 	            	node.getName().contains(",")) {
 	            	sb.append('"'+ node.getName() + "\",");
