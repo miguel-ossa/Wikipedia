@@ -1,0 +1,6 @@
+com\aio\Service\WikipediaService.class
+com\aio\Wikipedia\App.class
+com\aio\Repository\WikipediaRepositoryImpl.class
+com\aio\Repository\WikipediaRepository.class
+com\aio\Service\WikipediaServiceImpl.class
+com\aio\Wikipedia\AppConfig.class
