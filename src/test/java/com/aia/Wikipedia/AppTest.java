@@ -4,7 +4,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.aia.Service.WikipediaService;
-import com.aia.Wikipedia.AppConfig;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -16,6 +15,7 @@ import junit.framework.TestSuite;
 public class AppTest 
     extends TestCase
 {
+	
 	ApplicationContext appContext = 
 			new AnnotationConfigApplicationContext(AppConfig.class);
 	WikipediaService service = 
@@ -41,10 +41,10 @@ public class AppTest
 
     
     /**
-     * First approach to the problem
+     * Test case for "processWiki".
      */
     public void testProcessWiki() {
-    	service.processWiki(true, 0);
+    	service.processWiki(true, 10); // Debug and take a sample
 		System.out.printf("\nPages modified this year: %d\n\n", service.getModifiedThisYear());
 		System.out.printf("Processed: %d\n", service.getProcessed());
 		System.out.printf("Not found: %d\n", service.getNotFound());

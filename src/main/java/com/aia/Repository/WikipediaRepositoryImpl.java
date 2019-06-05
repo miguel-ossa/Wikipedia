@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -40,13 +41,19 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	private Set<String> setUrls = new HashSet<String>();
 	private Set<String> setTitles = new HashSet<String>();
 	
+	// Counters
 	private int notFound = 0;
 	private int duplicates = 0; 
 	private int processed = 0;
 	private int modifiedThisYear = 0;
-	private int process_limit = 0;
+	private int min_processed = 0;
+	
+	// Indicators
 	private Boolean debug = false;
 	private Boolean header = true;
+	private Boolean cancelProcess = false;
+	
+	// Formats
 	private List<String> formatStrings = Arrays.asList("dd MMM yyyy HH:mm", 
 	           "d MMM yyyy HH:mm", 
 	           "dd MMMM yyyy HH:mm", 
@@ -56,6 +63,7 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	private List<String> cleaningStrings = Arrays.asList("^\"|\"$", "", 
 				"^\'|\'$", "");
 
+	// Getters and Setters
 	public int getNotFound() {
 		return notFound;
 	}
@@ -69,22 +77,49 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 		return modifiedThisYear;
 	}
 	
-	public int getProcess_limit() {
-		return process_limit;
+	public int getmin_processed() {
+		return min_processed;
 	}
-	public void setProcess_limit(int process_limit) {
-		this.process_limit = process_limit;
+	public void setmin_processed(int min_processed) {
+		this.min_processed = min_processed;
 	}
 	
-	public void processWiki(Boolean debug, int process_limit) {
+	/**
+	 * processWiki
+	 * ===========
+	 * 
+	 * Processes a list of keywords from the file "firs10000.txt" and 
+	 * scrapes in Wikipedia for its absolute urls builded in the form:
+	 * 
+	 * https://en.wikipedia.org/wiki/[keyword]
+	 * 
+	 * Reports found and inexistent pages in different CSV files, and
+	 * also generates a separate CSV to report urls and titles (both)
+	 * duplicates.
+	 * 
+	 * We can obtain also the pages modified in the current year, using
+	 * the function "getModifiedThisYear".
+	 * 
+	 * Other getters:
+	 * 
+	 *   getProcessed(): the number of resolved urls included in "Processed.csv"
+	 *   getNotFound(): the number of unresolved urls included in "NotFound.csv"
+	 *   getDuplicates(): the number of duplicated urls included in "Duplicates.csv"
+	 *   
+	 *
+	 * @param  debug	a Boolean value to activate outputs during execution
+	 * @param  min_processed	minimum found sites found
+	 * @return      nothing
+	 */
+	public void processWiki(Boolean debug, int min_processed) {
     	
 		this.debug = debug;
-		this.process_limit = process_limit;
+		this.min_processed = min_processed;
 		
     	/**
     	 * Read the file and store it in a set
     	 */
-    	try (Stream<String> lines = Files.lines(Paths.get("src/main/Resources/first10000.txt"), Charset.defaultCharset())) {
+    	try (Stream<String> lines = Files.lines(Paths.get("src/main/Resources/first10000.txt"), Charset.forName("UTF-8"))) {
     		  lines.forEachOrdered(line -> scrapeIt(line)); 
     	} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -96,92 +131,132 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
     	createCSVNotFound();
     }
 
+	/**
+	 * scrapeIt
+	 * ========
+	 * 
+	 * For "processWiki" internal use. This function collect data
+	 * from the Wikipedia, and generates the final CSV, doing the
+	 * most part of the job.
+	 * 
+	 * @param  line	keyword to be processed
+	 * @return      nothing
+	 */
 	private void scrapeIt(String line) {
-    	if (!this.header) {
+		
+		// Process was requested to be cancelled
+		if (this.cancelProcess) return;
+		
+		// Is this the first line? Ignore it
+		if (this.header) {
+			this.header = false;
+			return;
+		}
 	
-    		// Load the page
-    	    Document doc = tryToConnect(line);
-    	    if (doc == null) {
-    	    	if (this.debug) {
-    	    		System.out.printf("   ***NOT FOUND |%s|\n", line);
-    	    	}
-    	    	notFound++;
-           	    Node node = new Node();
-        	    node.setName(line);
-        	    node.setTitle(null);
-        	    node.setUrl(null);
-        	    node.setLastModified(null);
-        	    this.listNotFound.add(node);
-        	    this.notFound++;
-        	    return;
-    	    }
+		// Enclose the keyword with quotes to avoid possible errors
+	    line = "\"" + line.replaceAll("\"","%22") + "\"";
+	    
+	    // Load the page
+	    Document doc = tryToConnect(line);
+	    if (doc == null) {
+	    	if (this.debug) {
+	    		System.out.printf("   ***NOT FOUND |%s|\n", line);
+	    	}
+	        Node node = new Node();
+	        node.setName(line);
+	        node.setTitle(null);
+	        node.setUrl(null);
+	        node.setLastModified(null);
+	        this.listNotFound.add(node);
+	        this.notFound++;
+	        return;
+	    }
+	
+	    // Get the canonical url
+	    String url = null;	    
+	    Elements links = doc.getElementsByTag("link");
+	    for (Element link : links) {
+	    	if (link.attr("rel").equals("canonical")) {
+	    		url = "\"" + link.attr("href").replaceAll("\"","%22") + "\"";
+	    		break;
+	    	}
+	    } 
+	    
+	    // Get the title
+	    String title = "\"" + doc.title().replaceAll("\"","%22") + "\"";
+	    
+	    // Cleanup the string which contains the last modified datetime
+	    String strDate = doc.getElementById("footer-info-lastmod").toString().replace("<li id=\"footer-info-lastmod\"> This page was last edited on ", "").replace("<span class=\"anonymous-show\">&nbsp;(UTC)</span>.</li>", "").replace(", at", "");
+	
+	    // Check for duplicates
+	    Boolean newTitle = setTitles.add(title);
+	    Boolean newUrl = setUrls.add(url.toLowerCase());
+	    if (!newTitle && !newUrl) {
+	    	if (this.debug) {
+	    		System.out.printf("   ***DUPLICATED |%s| with title |%s|\n", url, doc.title());
+	    	}
+	        Node node = new Node();
+	        node.setName(line);
+	        node.setTitle(title);
+	        node.setUrl(url);
+	        node.setLastModified(tryToParse(strDate));
+	        this.listDuplicates.add(node);
+	        this.duplicates++;
+	    	return;
+	    }
+	    
+	    // All seems to be OK, let's proceed with a valid node
+	    Node node = new Node();
+	    node.setName(line);
+	    node.setTitle(title);
+	    node.setUrl(url);
+	
+	    // Parse and store the datetime
+		node.setLastModified(tryToParse(strDate));
+		
+		// Check if the page was modified during this year
+		if (node.getLastModified().isAfter(LocalDateTime.parse((Year.now().getValue() - 1) + "-12-31T23:59:59")) && 
+			node.getLastModified().isBefore(LocalDateTime.parse((Year.now().getValue() + 1) + "-01-01T00:00:00"))) {
+			this.modifiedThisYear++;
+		}
+		
+		// Collect the node
+    	this.list.add(node);
+    	
+    	this.processed++;
 
-     	    String url = null;
-     	    
-    	    Elements links = doc.getElementsByTag("link");
-    		for (Element link : links) {
-    	    	if (link.attr("rel").equals("canonical")) {
-    	    		url = link.attr("href");
-    	    		break;
-    	    	}
-    	    } 
-    		
-    		// Check if title already exists
-     	    Boolean newTitle = setTitles.add(doc.title());
-    		Boolean newUrl = setUrls.add(url.toLowerCase());
-
-    		if (!newTitle && !newUrl) {
-    			if (this.debug) {
-    				System.out.printf("   ***DUPLICATED |%s| with title |%s|\n", url, doc.title());
-    			}
-           	    Node node = new Node();
-        	    node.setName(line);
-        	    node.setTitle(doc.title());
-        	    node.setUrl(url);
-        	    node.setLastModified(null);
-        	    this.listDuplicates.add(node);
-        	    this.duplicates++;
-    			return;
-    		}
-    		
-    		// All seems to be OK, let's proceed with a valid node
-       	    Node node = new Node();
-    	    node.setName(line.replaceAll("\"","%22"));
-    	    node.setTitle(doc.title().replaceAll("\"","%22"));
-    	    node.setUrl(url.replaceAll("\"","'"));
-
-    	    // Cleanup the string which contains the last modified datetime
-    	    String strDate = doc.getElementById("footer-info-lastmod").toString().replace("<li id=\"footer-info-lastmod\"> This page was last edited on ", "").replace("<span class=\"anonymous-show\">&nbsp;(UTC)</span>.</li>", "").replace(", at", "");
-    	    // Parse and store the datetime
-			node.setLastModified(tryToParse(strDate));
-			if (node.getLastModified().isAfter(LocalDateTime.parse("2018-12-31T23:59:59")) && 
-					node.getLastModified().isBefore(LocalDateTime.parse("2020-01-01T00:00:00"))) {
-				this.modifiedThisYear++;
-			}
-    	    this.list.add(node);
-    	    this.processed++;
-
-    	    // Report if indicated
-    	    if (this.debug) {
-    	    	System.out.printf("Archived Word %s\n" +
-    	    				  	  "         Title: |%s|\n" +
-    	    				  	  "         Url: |%s|\n" +
-    	    				  	  "         Date: |%s|\n", 
-    	    				  	  node.getName(), 
-    	    				  	  node.getTitle(),
-    	    				  	  node.getUrl(),
-    	    				  	  node.getLastModified().toString());
-    	    }
-
-    	    if (this.process_limit != 0) {
-    	    	if (this.processed >= this.process_limit) {
-    	    		return;
-    	    	}
-    	    }
+    	// Report if indicated
+    	if (this.debug) {
+    		System.out.printf("Archived Word %s\n" +
+    					  	  "         Title: |%s|\n" +
+    					  	  "         Url: |%s|\n" +
+    					  	  "         Date: |%s|\n", 
+    					  	  node.getName(), 
+    					  	  node.getTitle(),
+    					  	  node.getUrl(),
+    					  	  node.getLastModified().toString());
     	}
-    	else this.header = false;
+
+    	// Check if we should interrupt the process
+    	if (this.min_processed != 0) {
+    		if (this.processed >= this.min_processed)  {
+    			this.cancelProcess = true;
+    		}
+    	}
     }
     
+	/**
+	 * tryToConnect
+	 * ============
+	 * 
+	 * For "scrapeIt" internal use. This function scrapes the Wikipedia,
+	 * using the form:
+	 * 
+	 * https://en.wikipedia.org/wiki/[keyword]
+	 * 
+	 * @param  line	keyword to be processed
+	 * @return      nothing
+	 */
     private Document tryToConnect(String line) {
     	try {
     		return Jsoup.connect("https://en.wikipedia.org/wiki/" + line)
@@ -204,6 +279,13 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
     	return null;
     }
     
+	/**
+	 * Parse the datetime found in the Wikipedia. It is used
+	 * by the function "scrapeIt".
+	 * 
+	 * @param  strDate	string with the date to be parsed
+	 * @return	LocalDateTime	the date parsed
+	 */
     private LocalDateTime tryToParse(String strDate) {
         for (String formatString : this.formatStrings) {
         	try {
@@ -213,35 +295,26 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
         return null;
     }
 
+	/**
+	 * createCSV
+	 * =========
+	 * 
+	 * Create the final CSV with the data collected from the Wiki.
+	 * Used by the function "processWiki".
+	 * 
+	 * @param  none
+	 * @return	nothing
+	 */
     private void createCSV() {
-        try (PrintWriter writer = new PrintWriter(new File("src/main/Resources/result.csv"))) {
+        try (PrintWriter writer = new PrintWriter(new File("src/main/Resources/Processed.csv"))) {
 
         	for(Node node : this.list){
 	            StringBuilder sb = new StringBuilder();	 
 	            
 
-            	sb.append("\"" + node.getUrl() + "\",");
-            	sb.append("\""+ node.getName() + "\",");
-            	sb.append("\"" + node.getTitle() + "\",");
-	            sb.append(node.getLastModified()+"\n");
-	
-	            writer.write(sb.toString());
-        	}    
-
-          } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
-          }
-    }
-    private void createCSVDuplicates() {
-        try (PrintWriter writer = new PrintWriter(new File("src/main/Resources/resultDuplicates.csv"))) {
-
-        	for(Node node : this.listDuplicates){
-	            StringBuilder sb = new StringBuilder();	 
-	            
-
-	            sb.append("\"" + node.getUrl() + "\",");
-		        sb.append('"'+ node.getName() + "\",");
-		        sb.append('"'+ node.getTitle() + "\",");
+            	sb.append(node.getUrl() + ",");
+            	sb.append(node.getName() + ",");
+            	sb.append(node.getTitle() + ",");
 	            sb.append(node.getLastModified()+"\n");
 	
 	            writer.write(sb.toString());
@@ -252,15 +325,56 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
           }
     }
     
+	/**
+	 * createCSVDuplicates
+	 * ===================
+	 * 
+	 * Create the final CSV with the data collected from the Wiki,
+	 * that results in duplicate urls & titles.
+	 * 
+	 * Used by the function "processWiki".
+	 * 
+	 * @param  none
+	 * @return	nothing
+	 */
+    private void createCSVDuplicates() {
+        try (PrintWriter writer = new PrintWriter(new File("src/main/Resources/Duplicates.csv"))) {
+
+        	for(Node node : this.listDuplicates){
+	            StringBuilder sb = new StringBuilder();	 
+	            
+
+	            sb.append(node.getUrl() + ",");
+		        sb.append(node.getName() + ",");
+		        sb.append(node.getTitle() + ",");
+	            sb.append(node.getLastModified()+"\n");
+	
+	            writer.write(sb.toString());
+        	}    
+
+          } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+          }
+    }
+    
+	/**
+	 * createCSVNotFound
+	 * =================
+	 * 
+	 * Create the final CSV with the keywords not found in the Wiki.
+	 * 
+	 * Used by the function "processWiki".
+	 * 
+	 * @param  none
+	 * @return	nothing
+	 */
     private void createCSVNotFound() {
-        try (PrintWriter writer = new PrintWriter(new File("src/main/Resources/resultNotFound.csv"))) {
+        try (PrintWriter writer = new PrintWriter(new File("src/main/Resources/NotFound.csv"))) {
 
         	for(Node node : this.listNotFound){
 	            StringBuilder sb = new StringBuilder();	 
 	            
-	            sb.append("null,");
-	            sb.append('"'+ node.getName() + "\",");
-	            sb.append("null,null\n");
+	            sb.append(node.getName() + "\n");
 	
 	            writer.write(sb.toString());
         	}    

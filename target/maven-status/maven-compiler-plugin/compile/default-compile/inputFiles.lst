@@ -1,6 +1,7 @@
-D:\Development\Java\Spring\Wikipedia\src\main\java\com\aio\Wikipedia\AppConfig.java
-D:\Development\Java\Spring\Wikipedia\src\main\java\com\aio\Service\WikipediaServiceImpl.java
-D:\Development\Java\Spring\Wikipedia\src\main\java\com\aio\Repository\WikipediaRepositoryImpl.java
-D:\Development\Java\Spring\Wikipedia\src\main\java\com\aio\Repository\WikipediaRepository.java
-D:\Development\Java\Spring\Wikipedia\src\main\java\com\aio\Wikipedia\App.java
-D:\Development\Java\Spring\Wikipedia\src\main\java\com\aio\Service\WikipediaService.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\model\Node.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Wikipedia\App.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Service\WikipediaService.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Repository\WikipediaRepositoryImpl.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Repository\WikipediaRepository.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Service\WikipediaServiceImpl.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Wikipedia\AppConfig.java
