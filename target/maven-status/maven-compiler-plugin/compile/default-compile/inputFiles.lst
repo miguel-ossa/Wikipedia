@@ -2,6 +2,8 @@ D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\model\Node.java
 D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Wikipedia\App.java
 D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Service\WikipediaService.java
 D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Repository\WikipediaRepositoryImpl.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\aspect\TracingAspect.java
 D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Repository\WikipediaRepository.java
 D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Service\WikipediaServiceImpl.java
 D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\Wikipedia\AppConfig.java
+D:\Development\Java\Spring\Wikipedia\src\main\java\com\aia\configuration\AspectConfiguration.java
