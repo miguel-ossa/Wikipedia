@@ -1,7 +1,7 @@
-com\aia\Repository\WikipediaRepositoryImpl.class
 com\aia\model\Node.class
 com\aia\Service\WikipediaServiceImpl.class
-com\aia\Wikipedia\AppConfig.class
 com\aia\Repository\WikipediaRepository.class
 com\aia\Service\WikipediaService.class
 com\aia\Wikipedia\App.class
+com\aia\Repository\WikipediaRepositoryImpl.class
+com\aia\Wikipedia\AppConfig.class

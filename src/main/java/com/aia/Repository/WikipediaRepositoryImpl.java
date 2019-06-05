@@ -32,12 +32,12 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 
 	// List of nodes that would be written to the final csv
 	private List<Node> list = new ArrayList<Node>();
-	// List of urls duplicated
+	// List of duplicated urls
 	private List<Node> listDuplicates = new ArrayList<Node>();
-	// List of nodes not found
+	// List of nodes which cannot be found
 	private List<Node> listNotFound = new ArrayList<Node>();
 	
-	// Sets of temporary urls and titles to detect duplicates
+	// Sets of temporary urls and titles for detecting duplicates
 	private Set<String> setUrls = new HashSet<String>();
 	private Set<String> setTitles = new HashSet<String>();
 	
@@ -97,14 +97,12 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	 * also generates a separate CSV to report urls and titles (both)
 	 * duplicates.
 	 * 
-	 * We can obtain also the pages modified in the current year, using
-	 * the function "getModifiedThisYear".
-	 * 
 	 * Other getters:
 	 * 
-	 *   getProcessed(): the number of resolved urls included in "Processed.csv"
-	 *   getNotFound(): the number of unresolved urls included in "NotFound.csv"
-	 *   getDuplicates(): the number of duplicated urls included in "Duplicates.csv"
+	 *   getProcessed: the number of resolved urls included in "Processed.csv"
+	 *   getNotFound: the number of unresolved urls included in "NotFound.csv"
+	 *   getDuplicates: the number of duplicated urls included in "Duplicates.csv"
+	 *   getModifiedThisYear: number of pages modified this year
 	 *   
 	 *
 	 * @param  debug	a Boolean value to activate outputs during execution
@@ -153,20 +151,20 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 			return;
 		}
 	
-		// Enclose the keyword with quotes to avoid possible errors
-	    line = "\"" + line.replaceAll("\"","%22") + "\"";
 	    
 	    // Load the page
 	    Document doc = tryToConnect(line);
+		// Enclose the keyword with quotes to avoid possible errors in the CSV
+	    line = "\"" + line.replaceAll("\"","%22") + "\"";
 	    if (doc == null) {
 	    	if (this.debug) {
 	    		System.out.printf("   ***NOT FOUND |%s|\n", line);
 	    	}
 	        Node node = new Node();
 	        node.setName(line);
-	        node.setTitle(null);
-	        node.setUrl(null);
-	        node.setLastModified(null);
+//	        node.setTitle(null);
+//	        node.setUrl(null);
+//	        node.setLastModified(null);
 	        this.listNotFound.add(node);
 	        this.notFound++;
 	        return;
@@ -258,6 +256,7 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	 * @return      nothing
 	 */
     private Document tryToConnect(String line) {
+    	int tries = 1;
     	try {
     		return Jsoup.connect("https://en.wikipedia.org/wiki/" + line)
     				.userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")
@@ -266,9 +265,12 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
     	             .get();
     	} catch (IOException e) {
     		for (String formatString : this.cleaningStrings) {
-    			line = line.replaceAll(formatString, "");
+    			//line = line.replaceAll(formatString, "");
+    			if (this.debug) {
+    				System.out.println("Tries: " + ++tries);
+    			}
     			try {
-    				return Jsoup.connect("https://en.wikipedia.org/wiki/" + line)
+    				return Jsoup.connect("https://en.wikipedia.org/wiki/" + line.replaceAll(formatString, ""))
     						.userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")
     						.maxBodySize(0)
     						.timeout(1000*5)
