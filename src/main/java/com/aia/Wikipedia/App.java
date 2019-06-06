@@ -21,7 +21,7 @@ public class App
 		WikipediaService service = 
 				appContext.getBean("wikipediaService", WikipediaService.class);
 		
-		service.processWiki(false, 0); // Debug and process the complete file
+		service.processWiki(true, 0); // Debug and process the complete file
 		System.out.printf("\nPages modified this year: %d\n\n", service.getModifiedThisYear());
 		System.out.printf("Processed: %d\n", service.getProcessed());
 		System.out.printf("Not found: %d\n", service.getNotFound());
