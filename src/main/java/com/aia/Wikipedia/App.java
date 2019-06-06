@@ -12,7 +12,7 @@ import com.aia.Service.WikipediaService;
 public class App 
 {
     @SuppressWarnings("resource")
-	public static void main( String[] args )
+	public static void main( String[] args ) throws Exception
     {
 		
 		ApplicationContext appContext = 

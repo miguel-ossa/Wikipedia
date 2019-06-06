@@ -25,7 +25,7 @@ public class WikipediaServiceImpl implements WikipediaService {
 		this.wikipediaRepository = wikipediaRepository;
 	}
 
-	public void processWiki(Boolean debug, int min_processed)  {
+	public void processWiki(Boolean debug, int min_processed)  throws Exception {
 		
 		wikipediaRepository.processWiki(debug, min_processed);
 		

@@ -52,7 +52,7 @@ public class AppTest
     /**
      * Test case for "processWiki".
      */
-    public void testProcessWiki() {
+    public void testProcessWiki() throws Exception {
     	assertFalse(tracingAspect.isEnteringCalled());
     	service.processWiki(true, 10); // Debug and take a sample
 		System.out.printf("\nPages modified this year: %d\n\n", service.getModifiedThisYear());

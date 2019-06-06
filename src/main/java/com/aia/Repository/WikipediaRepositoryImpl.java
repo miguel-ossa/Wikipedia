@@ -1,7 +1,6 @@
 package com.aia.Repository;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -109,8 +108,9 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	 * @param  debug	a Boolean value to activate outputs during execution
 	 * @param  min_processed	minimum found sites found
 	 * @return      nothing
+	 * @throws Exception 
 	 */
-	public void processWiki(Boolean debug, int minProcessed) {
+	public void processWiki(Boolean debug, int minProcessed) throws Exception {
     	
 		this.debug = debug;
 		this.minProcessed = minProcessed;
@@ -118,13 +118,10 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
     	/**
     	 * Read the file and process it
     	 */
-    	try (Stream<String> lines = Files.lines(Paths.get(FILES_FOLDER + "first10000.txt"), Charset.forName("UTF-8"))) {
-    		  lines.forEachOrdered(line -> scrapeIt(line)); 
-    	} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-		}
-    	    	
+    	Stream<String> lines = Files.lines(Paths.get(FILES_FOLDER + "first10000.txt"), Charset.forName("UTF-8"));
+  		lines.forEachOrdered(line -> scrapeIt(line)); 
+  		lines.close();
+
     	if (this.debug) {
     		System.out.println("Generating files. Please, wait...\n");
     	}
@@ -259,7 +256,7 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
     						.maxBodySize(0)
     						.timeout(1000*5)
     						.get();
-    		} catch (IOException e1) {
+    		} catch (IOException ex) {
         		if (this.debug) {
         			System.out.println("Tries: " + ++tries);
         		}
@@ -295,23 +292,19 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	 * @param  none
 	 * @return	nothing
 	 */
-    private void createCSV() {
-        try (PrintWriter writer = new PrintWriter(new File(FILES_FOLDER + "Processed.csv"))) {
+    private void createCSV() throws Exception {
+    	PrintWriter writer = new PrintWriter(new File(FILES_FOLDER + "Processed.csv"));
 
-        	for(Node node : this.list){
-	            StringBuilder sb = new StringBuilder();	 
+        for(Node node : this.list){
+        	StringBuilder sb = new StringBuilder();	 
 
-            	sb.append(node.getUrl() + ",");
-            	sb.append(node.getName() + ",");
-            	sb.append(node.getTitle() + ",");
-	            sb.append(node.getLastModified()+"\n");
+            sb.append(node.getUrl() + ",");
+            sb.append(node.getName() + ",");
+            sb.append(node.getTitle() + ",");
+	        sb.append(node.getLastModified()+"\n");
 	
-	            writer.write(sb.toString());
-        	}    
-
-          } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
-          }
+	        writer.write(sb.toString());
+        }    
     }
     
 	/**
@@ -326,23 +319,20 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	 * @param  none
 	 * @return	nothing
 	 */
-    private void createCSVDuplicates() {
-        try (PrintWriter writer = new PrintWriter(new File(FILES_FOLDER + "Duplicates.csv"))) {
+    private void createCSVDuplicates() throws Exception {
 
-        	for(Node node : this.listDuplicates){
-	            StringBuilder sb = new StringBuilder();	 
+        PrintWriter writer = new PrintWriter(new File(FILES_FOLDER + "Duplicates.csv"));
 
-	            sb.append(node.getUrl() + ",");
-		        sb.append(node.getName() + ",");
-		        sb.append(node.getTitle() + ",");
-	            sb.append(node.getLastModified()+"\n");
+        for(Node node : this.listDuplicates){
+        	StringBuilder sb = new StringBuilder();	 
+
+	        sb.append(node.getUrl() + ",");
+		    sb.append(node.getName() + ",");
+		    sb.append(node.getTitle() + ",");
+	        sb.append(node.getLastModified()+"\n");
 	
-	            writer.write(sb.toString());
-        	}    
-
-          } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
-          }
+	        writer.write(sb.toString());
+       }    
     }
     
 	/**
@@ -356,18 +346,14 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	 * @param  none
 	 * @return	nothing
 	 */
-    private void createCSVNotFound() {
-        try (PrintWriter writer = new PrintWriter(new File(FILES_FOLDER + "NotFound.csv"))) {
+    private void createCSVNotFound() throws Exception {
+        PrintWriter writer = new PrintWriter(new File(FILES_FOLDER + "NotFound.csv"));
 
-        	for(Node node : this.listNotFound){
-	            StringBuilder sb = new StringBuilder();	 
+        for(Node node : this.listNotFound){
+        	StringBuilder sb = new StringBuilder();	 
 	            
-	            writer.write(sb.append(node.getName() + "\n").toString());
-        	}    
-
-          } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
-          }
+	        writer.write(sb.append(node.getName() + "\n").toString());
+      	}    
     }
 }
 
