@@ -305,6 +305,7 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	
 	        writer.write(sb.toString());
         }    
+        writer.close();
     }
     
 	/**
@@ -333,6 +334,7 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	
 	        writer.write(sb.toString());
        }    
+       writer.close();
     }
     
 	/**
@@ -352,8 +354,11 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
         for(Node node : this.listNotFound){
         	StringBuilder sb = new StringBuilder();	 
 	            
-	        writer.write(sb.append(node.getName() + "\n").toString());
-      	}    
+        	sb.append(node.getName() + "\n");
+        	
+	        writer.write(sb.toString());
+      	}  
+        writer.close();
     }
 }
 

@@ -46,6 +46,8 @@ public class TracingAspect  extends CallTracker {
 	@Around("SystemArchitecture.Repository() || SystemArchitecture.Service()")
 	public void trace(ProceedingJoinPoint proceedingJP) throws Throwable {
 		
+		enteringCalled = true;
+		
 		String methodInformation = proceedingJP.getStaticPart().getSignature().toString();
 		logger.trace("Entering " + methodInformation);
 		trackCall();
