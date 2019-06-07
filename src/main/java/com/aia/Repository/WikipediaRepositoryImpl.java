@@ -33,7 +33,7 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	
 	// List of nodes that would be written to the final csv
 	private List<Node> list = new ArrayList<Node>();
-	// List of duplicated urls
+	// List of duplicated urls 
 	private List<Node> listDuplicates = new ArrayList<Node>();
 	// List of nodes which cannot be found
 	private List<Node> listNotFound = new ArrayList<Node>();
