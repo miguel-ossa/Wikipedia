@@ -60,6 +60,7 @@ public class AppTest
 		System.out.printf("Not found: %d\n", service.getNotFound());
 		System.out.printf("Duplicates: %d\n", service.getDuplicates());
     	assertTrue(service.getProcessed() != 0);
+    	assertTrue(tracingAspect.isCalled());
     }
     
 
