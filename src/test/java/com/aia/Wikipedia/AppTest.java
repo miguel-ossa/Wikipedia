@@ -20,8 +20,8 @@ import junit.framework.TestSuite;
 public class AppTest 
     extends TestCase
 {
-	//@Autowired
-	//TracingAspect tracingAspect;
+//	@Autowired
+//	TracingAspect tracingAspect;
 	
 	ApplicationContext appContext = 
 			new AnnotationConfigApplicationContext(AppConfig.class);
@@ -53,14 +53,13 @@ public class AppTest
      * Test case for "processWiki".
      */
     public void testProcessWiki() throws Exception {
-    	assertFalse(tracingAspect.isEnteringCalled());
+    	assertFalse(tracingAspect.isCalled());
     	service.processWiki(true, 10); // Debug and take a sample
 		System.out.printf("\nPages modified this year: %d\n\n", service.getModifiedThisYear());
 		System.out.printf("Processed: %d\n", service.getProcessed());
 		System.out.printf("Not found: %d\n", service.getNotFound());
 		System.out.printf("Duplicates: %d\n", service.getDuplicates());
     	assertTrue(service.getProcessed() != 0);
-    	assertTrue(tracingAspect.isEnteringCalled());
     }
     
 

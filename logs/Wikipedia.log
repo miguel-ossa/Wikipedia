@@ -1,0 +1,10 @@
+2019-06-07 10:24:47,322 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:19] Entering void com.aia.Service.WikipediaService.processWiki(Boolean,int)
+2019-06-07 10:24:47,330 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:19] Entering void com.aia.Repository.WikipediaRepository.processWiki(Boolean,int)
+2019-06-07 10:24:50,354 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:27] Exiting void com.aia.Repository.WikipediaRepository.processWiki(Boolean,int)
+2019-06-07 10:24:50,355 TRACE [main] c.a.a.PerformanceAspect [PerformanceAspect.java:27] StopWatch 'void com.aia.Repository.WikipediaRepository.processWiki(Boolean,int)': running time (millis) = 3024
+2019-06-07 10:24:50,356 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:27] Exiting void com.aia.Service.WikipediaService.processWiki(Boolean,int)
+2019-06-07 10:25:09,513 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:19] Entering void com.aia.Service.WikipediaService.processWiki(Boolean,int)
+2019-06-07 10:25:09,520 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:19] Entering void com.aia.Repository.WikipediaRepository.processWiki(Boolean,int)
+2019-06-07 10:25:12,346 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:27] Exiting void com.aia.Repository.WikipediaRepository.processWiki(Boolean,int)
+2019-06-07 10:25:12,347 TRACE [main] c.a.a.PerformanceAspect [PerformanceAspect.java:27] StopWatch 'void com.aia.Repository.WikipediaRepository.processWiki(Boolean,int)': running time (millis) = 2827
+2019-06-07 10:25:12,348 TRACE [main] c.a.a.TracingAspect [TracingAspect.java:27] Exiting void com.aia.Service.WikipediaService.processWiki(Boolean,int)
