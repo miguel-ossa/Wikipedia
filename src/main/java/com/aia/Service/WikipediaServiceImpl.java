@@ -9,19 +9,9 @@ import com.aia.Repository.WikipediaRepository;
 public class WikipediaServiceImpl implements WikipediaService {
 
 	private WikipediaRepository wikipediaRepository;
-
-	public WikipediaServiceImpl() {
-		
-	}
-	
-	public WikipediaServiceImpl(WikipediaRepository wikipediaRepository) {
-//		System.out.println("We are using constructor injection");
-		this.wikipediaRepository = wikipediaRepository;
-	}
 	
 	@Autowired
 	public void setWikipediaRepository(WikipediaRepository wikipediaRepository) {
-//		System.out.println("We are using setter injection");
 		this.wikipediaRepository = wikipediaRepository;
 	}
 
