@@ -15,14 +15,11 @@ import junit.framework.TestSuite;
 /**
  * Unit test for simple App.
  */
-//@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = AspectConfiguration.class)
 public class AppTest 
     extends TestCase
 {
-//	@Autowired
-//	TracingAspect tracingAspect;
-	
+
 	ApplicationContext appContext = 
 			new AnnotationConfigApplicationContext(AppConfig.class);
 	WikipediaService service = 
