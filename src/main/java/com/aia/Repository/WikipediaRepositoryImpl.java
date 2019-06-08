@@ -29,7 +29,7 @@ import com.aia.model.Node;
 @Repository("wikipediaRepository")
 public class WikipediaRepositoryImpl implements WikipediaRepository {
 
-	public static final String FILES_FOLDER = "src/main/files/";
+	private static final String FILES_FOLDER = "src/main/files/";
 	
 	// List of nodes that would be written to the final csv
 	private List<Node> list = new ArrayList<Node>();
@@ -38,9 +38,8 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	// List of nodes which cannot be found
 	private List<Node> listNotFound = new ArrayList<Node>();
 	
-	// Sets of temporary urls and titles for detecting duplicates
+	// Sets of temporary urls for detecting duplicates
 	private Set<String> setUrls = new HashSet<String>();
-	private Set<String> setTitles = new HashSet<String>();
 	
 	// Counters
 	private int notFound = 0;
@@ -181,50 +180,44 @@ public class WikipediaRepositoryImpl implements WikipediaRepository {
 	    // Get the title
 	    String title = "\"" + doc.title().replaceAll("\"","%22") + "\"";
 	    
-	    // Cleanup the string which contains the last modified datetime
-	    String strDate = doc.getElementById("footer-info-lastmod").toString().replace("<li id=\"footer-info-lastmod\"> This page was last edited on ", "").replace("<span class=\"anonymous-show\">&nbsp;(UTC)</span>.</li>", "").replace(", at", "");
-	
-	    // Check for duplicates
-	    Boolean newTitle = setTitles.add(title);
-	    Boolean newUrl = setUrls.add(url.toLowerCase());
-	    if (!newTitle && !newUrl) {
-	    	if (this.debug) {
-	    		System.out.printf("   ***DUPLICATED %s\n", line);
-	    	}
-	        Node node = new Node();
-	        node.setName(line);
-	        node.setTitle(title);
-	        node.setUrl(url);
-	        node.setLastModified(tryToParse(strDate));
-	        this.listDuplicates.add(node);
-	        this.duplicates++;
-	    	return;
-	    }
-	    
 	    // All seems to be OK, let's proceed with a valid node
 	    Node node = new Node();
 	    node.setName(line);
 	    node.setTitle(title);
 	    node.setUrl(url);
 	
+	    // Cleanup the string which contains the last modified datetime
+	    String strDate = doc.getElementById("footer-info-lastmod").toString().replace("<li id=\"footer-info-lastmod\"> This page was last edited on ", "").replace("<span class=\"anonymous-show\">&nbsp;(UTC)</span>.</li>", "").replace(", at", "");
 	    // Parse and store the datetime
 		node.setLastModified(tryToParse(strDate));
 		
-		// Check if the page was modified during this year
-		if (node.getLastModified().isAfter(LocalDateTime.parse((Year.now().getValue() - 1) + "-12-31T23:59:59")) && 
-			node.getLastModified().isBefore(LocalDateTime.parse((Year.now().getValue() + 1) + "-01-01T00:00:00"))) {
-			this.modifiedThisYear++;
-		}
+		// Check for duplicates
+	    if (!setUrls.add(url)) {
+	        this.listDuplicates.add(node);
+	        
+	        this.duplicates++;
+	        
+	        if (this.debug) {
+	    		System.out.printf("   ***DUPLICATED %s\n", line);
+	    	}
+	    }
+	    else {
+	    	// Check if the page was modified during this year
+	    	if (node.getLastModified().isAfter(LocalDateTime.parse((Year.now().getValue() - 1) + "-12-31T23:59:59")) && 
+	    		node.getLastModified().isBefore(LocalDateTime.parse((Year.now().getValue() + 1) + "-01-01T00:00:00"))) {
+	    		this.modifiedThisYear++;
+	    	}
 		
-		// Collect the node
-    	this.list.add(node);
+	    	// Collect the node
+	    	this.list.add(node);
     	
-    	this.processed++;
+	    	this.processed++;
 
-    	// Report if indicated
-    	if (this.debug) {
-    		System.out.printf("Archived %s\n", line);
-    	}
+	    	// Report if indicated
+	    	if (this.debug) {
+	    		System.out.printf("Archived %s\n", line);
+	    	}
+	    }
 
     	// Check if we should interrupt the process
     	if (this.minProcessed != 0) {
