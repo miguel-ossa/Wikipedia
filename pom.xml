@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring-webmvc.version>5.1.7.RELEASE</spring-webmvc.version>
+    <spring-webmvc.version>5.2.0.RELEASE</spring-webmvc.version>
     <spring-framework.version>3.2.4.RELEASE</spring-framework.version>
     <logback.version>1.0.13</logback.version>
     <javadoc.version>3.1.0</javadoc.version>
